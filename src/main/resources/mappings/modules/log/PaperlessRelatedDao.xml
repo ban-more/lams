@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.log.dao.PaperlessRelatedDao">
+
+	<select id="findPaperlessProvinces" resultType="java.lang.String">
+		select
+		COUNT(distinct p.prov_branch_no)
+		from
+		permission_controler p
+		where
+		p.permission_code ='ElectronicInsurance'
+		order by 1
+	</select>
+
+	<select id="findPaperlessBranches" resultType="java.lang.String">
+		select
+		COUNT(distinct p.town_branch_no)
+		from
+		permission_controler p
+		where
+		p.permission_code ='ElectronicInsurance'
+	</select>
+	<select id="findPaperlessUsers" resultType="java.lang.String">
+		select
+		count(*)
+		from
+		spi_info
+		where town_branch_no in (select  p.town_branch_no from permission_controler p
+		where p.permission_code ='ElectronicInsurance'
+		group by  p.town_branch_no ) and  t01status='2' and emp_type3 ='A5'
+	</select>
+	
+</mapper>

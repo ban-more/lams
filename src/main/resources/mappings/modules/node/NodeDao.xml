@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.node.dao.NodeDao">
+    
+	<sql id="nodeColumns">
+		a.id AS "id",
+		a.ip AS "ip",
+		a.port AS "port",
+		a.username AS "username",
+		a.password AS "password",
+		a.nodename1 AS "nodename1",
+		a.nodename2 AS "nodename2",
+		a.path1 AS "path1",
+		a.path2 AS "path2",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="nodeJoins">
+	</sql>
+    
+	<select id="get" resultType="Node">
+		SELECT 
+			<include refid="nodeColumns"/>
+		FROM node a
+		<include refid="nodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Node">
+		SELECT 
+			<include refid="nodeColumns"/>
+		FROM node a
+		<include refid="nodeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="ip != null and ip != ''">
+				AND a.ip = #{ip}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.ip DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findAllList1" resultType="Node">
+		SELECT
+		*
+		FROM
+		node
+		WHERE
+		1=1
+	</select>
+	<select id="findAllList" resultType="Node">
+		SELECT 
+			<include refid="nodeColumns"/>
+		FROM node a
+		<include refid="nodeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO node(
+			id,
+			ip,
+			port,
+			username,
+			password,
+			nodename1,
+			nodename2,
+			path1,
+			path2,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{ip},
+			#{port},
+			#{username},
+			#{password},
+			#{nodename1},
+			#{nodename2},
+			#{path1},
+			#{path2},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE node SET 	
+			ip = #{ip},
+			port = #{port},
+			username = #{username},
+			password = #{password},
+			nodename1 = #{nodename1},
+			nodename2 = #{nodename2},
+			path1 = #{path1},
+			path2 = #{path2},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE node SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

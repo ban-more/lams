@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.log.dao.UploadstaicsDao">
+    
+	<sql id="uploadstaicsColumns">
+		a.id AS "id",
+		a.prtnum AS "prtnum",
+		a.sumprem AS "sumprem",
+		a.submitlog AS "submitlog",
+		a.source AS "source",
+		a.agentcode AS "agentcode",
+		a.handler AS "handler",
+		a.devicetype AS "devicetype",
+		a.makedate AS "makedate",
+		a.maketime AS "maketime",
+		a.salechanne AS "salechanne",
+		a.prov_branch_no AS "provBranchNo",
+		a.city_branch_no AS "cityBranchNo",
+		a.town_branch_no AS "townBranchNo"
+	</sql>
+	<sql id="uploadstaicsJoins">
+	</sql>
+    
+	<select id="get" resultType="Uploadstaics">
+		SELECT 
+			<include refid="uploadstaicsColumns"/>
+		FROM uploadstaics a
+		<include refid="uploadstaicsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Uploadstaics">
+		SELECT 
+			<include refid="uploadstaicsColumns"/>
+		FROM uploadstaics a
+		<include refid="uploadstaicsJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findUploadByMonth" resultType="com.thinkgem.jeesite.modules.log.entity.Base">
+		select
+			to_char(to_date(#{date1},'yyyy-mm-dd'),'yyyy-mm') as dat,
+		 sum(case when u.submitlog='1' then 1 else 0 end) as policys,
+		 sum(case when u.submitlog='1' then TO_NUMBER(u.sumprem)  else  0  end) as insurance
+		 from uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+	</select>
+
+	<select id="findUploadByDay" resultType="com.thinkgem.jeesite.modules.log.entity.Base">
+		select
+		 u.makedate as dat,
+		 sum(case when u.submitlog='1' then 1 else 0 end) as policys,
+		 sum(case when u.submitlog='1' then TO_NUMBER(u.sumprem)  else  0  end) as insurance
+		 from uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+		  group by u.makedate
+ 		  order by u.makedate
+	</select>
+	<select id="findInsuranceByHour" resultType="java.lang.String">
+		select
+		 sum(case when u.submitlog='1' then TO_NUMBER(u.sumprem)  else  0  end) as insurance
+		 from uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+		 group by trunc(to_date(CONCAT(makedate,maketime),'yyyy-mm-dd hh24:mi:ss'),'hh24')
+		 order by 1
+	</select>
+	<select id="findPolicysByHour" resultType="java.lang.String">
+		select
+		 sum(case when u.submitlog='1' then 1 else 0 end) as policys
+		 from uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+		 group by trunc(to_date(CONCAT(makedate,maketime),'yyyy-mm-dd hh24:mi:ss'),'hh24')
+		 order by 1
+	</select>
+	<select id="findDateByHour" resultType="java.lang.String">
+		select
+		 trunc(to_date(CONCAT(makedate,maketime),'yyyy-mm-dd hh24:mi:ss'),'hh24') as dat
+		 from uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+		 group by trunc(to_date(CONCAT(makedate,maketime),'yyyy-mm-dd hh24:mi:ss'),'hh24')
+		 order by 1
+	</select>
+	<select id="findUploadByHour" resultType="com.thinkgem.jeesite.modules.log.entity.Base">
+		select
+		 trunc(to_date(CONCAT(makedate,maketime),'yyyy-mm-dd hh24:mi:ss'),'hh24') as dat,
+		 sum(case when u.submitlog='1' then 1 else 0 end) as policys,
+		 sum(case when u.submitlog='1' then TO_NUMBER(u.sumprem)  else  0  end) as insurance
+		 from uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+		 group by trunc(to_date(CONCAT(makedate,maketime),'yyyy-mm-dd hh24:mi:ss'),'hh24')
+		 order by 1
+	</select>
+	<select id="findAllList" resultType="Uploadstaics">
+		SELECT 
+			<include refid="uploadstaicsColumns"/>
+		FROM uploadstaics a
+		<include refid="uploadstaicsJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findUploadByProv" resultType="com.thinkgem.jeesite.modules.log.entity.ProvBase">
+		select
+		u.prov_branch_no as prov,
+		sum(case when u.submitlog='1' then 1 else 0 end) as policys,
+		sum(case when u.submitlog='1' then TO_NUMBER(u.sumprem)  else  0  end) as insurance
+		from
+		uploadstaics u where u.makedate
+		 between #{date1} and #{date2}
+		group by u.prov_branch_no
+		order by 1
+	</select>
+	
+</mapper>

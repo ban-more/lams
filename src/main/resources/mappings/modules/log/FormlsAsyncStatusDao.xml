@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.log.dao.FormlsAsyncStatusDao">
+    
+	<sql id="formlsAsyncStatusColumns">
+		a.prtnum AS "prtnum",
+		a.salesmen_no AS "salesmenNo",
+		a.manage_com AS "manageCom",
+		a.sale_code AS "saleCode",
+		a.sale_channel AS "saleChannel",
+		a.insured_pdf_status AS "insuredPdfStatus",
+		a.insured_tiff_status AS "insuredTiffStatus",
+		a.inform_pdf_status AS "informPdfStatus",
+		a.inform_tiff_status AS "informTiffStatus",
+		a.association_status AS "associationStatus",
+		a.register_status AS "registerStatus",
+		a.check_status AS "checkStatus",
+		a.created_time AS "createdTime",
+		a.updated_time AS "updatedTime",
+		a.insured_nos AS "insuredNos",
+		a.tiff_pages AS "tiffPages",
+		a.delete_status AS "deleteStatus",
+		a.need_tips_pdf AS "needTipsPdf",
+		a.tips_pdf_status AS "tipsPdfStatus",
+		a.need_auth_pdf AS "needAuthPdf",
+		a.auth_pdf_status AS "authPdfStatus",
+		a.tips_tiff_status AS "tipsTiffStatus",
+		a.auth_tiff_status AS "authTiffStatus",
+		a.questionnaire_tiff_status AS "questionnaireTiffStatus"
+	</sql>
+	
+	<sql id="formlsAsyncStatusJoins">
+	</sql>
+
+	<select id="findPolicyRatio" resultType="com.thinkgem.jeesite.modules.log.entity.Base">
+		with tmp_1 as(
+		select t.sale_code,count(*) "z"  from formls_async_status t
+		where  t.salesmen_no != '11216300730246'
+		and t.created_time &gt;= to_date(#{date1}, 'yyyy/MM/dd') and t.created_time &lt;to_date(#{date2}, 'yyyy/MM/dd')
+		group by t.sale_code order by 1),
+
+		tmp_2 as(
+		select c.city_branch_no,c.town_branch_no from c_Branch@dblink_zmsebs c
+		group by c.city_branch_no,c.town_branch_no
+		order by c.city_branch_no,c.town_branch_no ),
+
+		tmp_3 as(
+		select u.city_branch_no,
+		sum(case when u.source='1' and u.submitlog='1' then 1 else 0 end) "OnlineSum"
+		from uploadstaics u
+		where u.makedate between #{date1} and #{date3}
+		group by  u.city_branch_no
+		order by  u.city_branch_no)
+
+		select c.city_branch_no AS cityid ,sum(t."z" ) "paperlessSum",u."OnlineSum" AS onlineSum from tmp_1 t,tmp_2 c,tmp_3 u
+		where t.sale_code=c.town_branch_no
+		and  c.city_branch_no= u.city_branch_no
+		group by c.city_branch_no,u."OnlineSum"
+		order by c.city_branch_no,u."OnlineSum"
+	</select>
+	<select id="findAllInsuranceFee" resultType="java.lang.String">
+		select
+		sum(a.prem)
+		from
+		formlspol a
+		where
+		trim(a.contno) in
+		(select t.prtnum from formls_async_status t where t.salesmen_no != '11216300730246'
+		and t.created_time &gt;= to_date(#{date1}, 'yyyy/MM/dd')
+		and t.created_time &lt; to_date(#{date2}, 'yyyy/MM/dd'))
+	</select>
+	<select id="findSumInsurance" resultType="java.lang.String">
+		select count(1)
+		from formls_async_status t
+		where  t.salesmen_no != '11216300730246'
+		and t.created_time &gt;= to_date(#{date1}, 'yyyy/MM/dd')
+		and t.created_time &lt; to_date(#{date2}, 'yyyy/MM/dd')
+	</select>
+	<select id="findAllInsuranceNop" resultType="java.lang.String">
+		select  count(*) from (
+		select distinct t.salesmen_no, t.manage_com sf
+		from formls_async_status t
+		where  t.salesmen_no != '11216300730246'
+		and t.created_time &gt;= to_date(#{date1}, 'yyyy/MM/dd')
+		and t.created_time &lt;to_date(#{date2}, 'yyyy/MM/dd'))
+	</select>
+
+	<select id="get" resultType="FormlsAsyncStatus">
+		SELECT 
+			<include refid="formlsAsyncStatusColumns"/>
+		FROM formls_async_status a
+		<include refid="formlsAsyncStatusJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FormlsAsyncStatus">
+		SELECT 
+			<include refid="formlsAsyncStatusColumns"/>
+		FROM formls_async_status a
+		<include refid="formlsAsyncStatusJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FormlsAsyncStatus">
+		SELECT 
+			<include refid="formlsAsyncStatusColumns"/>
+		FROM formls_async_status a
+		<include refid="formlsAsyncStatusJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>
